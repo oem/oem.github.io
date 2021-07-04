@@ -13,6 +13,11 @@ module.exports = {
         bgpulse: "bgpulse 9s infinite"
       },
       colors: {
+        darkshade: {
+          light: "#222222",
+          DEFAULT: "#222222",
+          dark: "#222222"
+        },
         ultramarine: {
           light: "#004a4d",
           DEFAULT: "#003d4d",
