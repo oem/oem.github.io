@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/main.css">
+  <title>öm's homepage</title>
+</head>
+
+<body>
+  <div class="container">
+    <h1>
+      Hi. I'm <span class="emphasized">öm</span>,
+      a <span class="emphasized">programmer</span> and
+      <span class="emphasized">artist</span> from
+      <span class="emphasized">Hamburg</span>, germany.
+    </h1>
+
+    <nav>
+      <ol>
+        <li><a href="/">Blog</a></li>
+        <li class="selected"><a href="/lab">Lab</a></li>
+      </ol>
+    </nav>
+
+    <ol class="content-list">
+      <li class="post">
+        <h3>Pollen Levels</h3>
+
+        <ul class="tags">
+          <li class="tag">Elm</li>
+          <li class="tag">julia</li>
+        </ul>
+
+        <a href="//oem.github.io/pollen"><img src="/assets/pollen.svg" alt="covid-19 dashboard"></a>
+
+        <p>
+          Our guest dog, that we take care of now and then (as often as possible), developed an allergy to grasses. The
+          poor guy. To be better prepared, I build this little dashboard that shows the pollen levels, including a 6 day
+          forecast.
+          It also works for humans!
+        </p>
+        <p>Have a look at <a href="//oem.github.io/pollen">oem.github.io/pollen</a>.</p>
+        <p>
+          Let's nerd out for a second :)
+
+          The frontend was done in <a href="https://elm-lang.org">Elm</a>, which is a delightful entry level drug to
+          (pure) functional programming! It's
+          also small, fast and absurdly robust, especially considering that it has to live in the very hostile browser
+          environment.
+
+          The data collection and cleaning was a breeze with <a href="https://julialang.org">julia</a>, a language my
+          brain seems to like a lot!
+
+          All of this is hosted on github, a github action will run the julia code every now and then to fetch and clean
+          new data and commit the updated dataset. The frontend will request the committed dataset file directly from
+          github. Oh, and is hosted as a github page.
+        </p>
+      </li>
+
+      <li class="post">
+        <h3>Covid-19 Dashboard</h3>
+
+        <ul class="tags">
+          <li class="tag">Elm</li>
+          <li class="tag">julia</li>
+        </ul>
+
+        <a href="//oem.github.io/covid19"><img src="/assets/covid19.svg" alt="covid-19 dashboard"></a>
+
+        <p>
+          We should strive to make informed decisions, especially when dealing with a pandemic. This dashboard is
+          color-coded to make it very easy and intuitive to get a quick summary of the current covid situation. Like
+          checking the weather.
+        </p>
+        <p>
+          You can find the running dashboard at <a href="//oem.github.io/covid19">oem.github.io/covid19</a>.
+        </p>
+        <p>
+          Under the hood it is very similar to the pollen level page, it uses <a href="https://julialang.org">julia</a>
+          to get the data, <a href="https://elm-lang.org">Elm</a> for the frontend and github for hosting and updating.
+        </p>
+    </ol>
+  </div>
+</body>
+
+</html>

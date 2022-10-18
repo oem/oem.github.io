@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/main.css">
+  <title>öm's homepage</title>
+</head>
+
+<body>
+            <div class="container">
+            
+            <nav>
+                <ol>
+                    <li class="selected"><a href="/">Blog</a></li>
+                    <li><a href="/lab.html">Lab</a></li>
+                </ol>
+            </nav>
+
+            <ol class="detail-page">
+            <h1>Using 2FA/OTP with pass</h1>
+<h2>Goal</h2>
+<p>Getting away from being dependent on your phone  and some app to manage your Two-Factor-Authentication (2FA) and instead use <strong>pass</strong>.
+Don’t worry, this is going to be a very short and easy read!</p>
+<h2>Prerequisites</h2>
+<p>You should optimally already be familiar with <strong>gnupg</strong> and using <strong>pass</strong> to manage your passwords. This post will only describe <em>upgrading</em> your pass setup to also support <strong>2FA</strong>.</p>
+<h2>Dependencies</h2>
+<p>You will need the <strong>pass</strong>, <strong>pass-otp</strong> and <strong>zbar</strong> packages. On archlinux you can install them with the following command:</p>
+<pre><code class="language-bash">pacman -S pass pass-otp zbar
+</code></pre>
+<h2>Reading a QR Code</h2>
+<p>With zbar, it is quite easy to decode a QR code, you don’t need some Google Authenticator app for that! Just save the image, or take a screenshot of the QR code and then simply run:</p>
+<pre><code class="language-bash">zbarimg -q &lt;the QR Code image file&gt;
+</code></pre>
+<p>Keep that string, you will need it in a second!</p>
+<h2>Adding the otpauth string</h2>
+<p>You can save the otpauth string very similar to how you would insert a new entry in pass:</p>
+<pre><code class="language-bash">pass otp add &lt;a name of your choosing&gt;
+</code></pre>
+<p>You enter the string starting with <code>otpauth://...</code> that you got from zbar.
+And that’s pretty much it for the setup.</p>
+<h2>Generating a OTP</h2>
+<p>To generate the One-Time-Password you simply run:</p>
+<pre><code class="language-bash">pass otp &lt;the name you chose before&gt;
+</code></pre>
+<p>And there you go, a One-Time-Password, directly generated from your shell, no phone involved!</p>
+
+            </ol>
+            </div>
+            </body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/main.css">
+  <title>öm's homepage</title>
+</head>
+
+<body>
+            <div class="container">
+            
+            <nav>
+                <ol>
+                    <li class="selected"><a href="/">Blog</a></li>
+                    <li><a href="/lab.html">Lab</a></li>
+                </ol>
+            </nav>
+
+            <ol class="detail-page">
+            <h1>Alien Facehugger Wasps, a Pandemic, Webcrawlers and Julia</h1>
+<p><img src="/assets/webcrawler-cover.jpeg" alt="Collect and analyze COVID 19 numbers for Hamburg, Germany" /></p>
+<h2>TL;DR</h2>
+<ol>
+<li>Build a webcrawler in julia.</li>
+<li>Use the data for a simple plot.</li>
+</ol>
+<h2>Motivation</h2>
+<p>The web is full of interesting bits and pieces of information. Maybe it’s the current weather, stock prices, or the wikipedia article about the <a href="https://en.wikipedia.org/wiki/Emerald_cockroach_wasp">wasp that goes all alien parasite facehugger on other insects</a>, which you vaguely remember from one of those late night documentaries (already sorry you are reading this?).</p>
+<p>If you are lucky, that data is available via an <strong>API</strong>, making it usually pretty easy (not always tho, if API developers come up with byzantine <em>authentications</em>, required <em>headers</em> or other elegant/horrible designs, the fun is over) to get to the data.</p>
+<p>A lot of the shiny nuggets are not available via a nice API, tho. Which means, we have to <strong>crawl webpages</strong>.
+Pick something that you are really interested in / want to use for a project of yours, that’ll make it less of a chore and far more interesting!</p>
+<h2>Local = Relevant</h2>
+<p>For me, currently, that’s the Covid-19 pandemic. And more specifically, how it is developing close to me. In my case, that means the city of Hamburg in Germany.</p>
+<p>Chances are, these specific numbers/case is not relevant to you. But that’s a good thing, you can use what you learned here and mine the website of your home city maybe (or whatever you are interested in).</p>
+<p>Nothing helps your brain absorb new things better than generalizing those new skills and using them to solve related problems!
+There is the official website of the city, that has a page for the covid-19 numbers, <a href="https://www.hamburg.de/corona-zahlen/">hamburg.de</a>.</p>
+<p>The page with the numbers is in german, but don’t worry, that’s what our webcrawler will hopefully help us with — we can get to the numbers without having to understand all the surrounding text. I will try to help out and translate what is relevant, but that will only be a minor detail when we try to find the right text to extract from.</p>
+<p>If you like, you can check out the <a href="https://github.com/oem/medium-articles/blob/30640de006fd29ca97394c009d30813efac65075/julia_webcrawling/webrawling.ipynb">notebook</a> or even code along in <a href="https://mybinder.org/v2/gh/oem/medium-articles/master?filepath=%2Fjulia_webcrawling%2Fwebrawling.ipynb">binder</a>.</p>
+<p>First, let’s get some of the dependencies out of the way:</p>
+<p>Aside from <a href="https://github.com/JuliaWeb/HTTP.jl">HTTP.jl</a> to request the website, we will also use <a href="https://github.com/JuliaWeb/Gumbo.jl">Gumbo</a> to parse html and <a href="https://github.com/Algocircle/Cascadia.jl">Cascadia</a> to extract data from the html document via selectors.</p>
+<pre><code class="language-julia">using HTTP
+using Gumbo, Cascadia
+using Cascadia:matchFirst
+</code></pre>
+<p>We need to fetch and parse the website, which is easily done with Gumbo.</p>
+<pre><code class="language-julia">url = &quot;https://www.hamburg.de/corona-zahlen&quot;
+response = HTTP.get(url)
+html = parsehtml(String(response))
+
+# =&gt;
+HTML Document:
+&lt;!DOCTYPE &gt;
+HTMLElement{:HTML}:&lt;HTML lang=&quot;de&quot;&gt;
+  &lt;head&gt;&lt;/head&gt;
+  &lt;body class=&quot;no-ads&quot;&gt;
+    HTTP/1.1 200 OK
+    ServerHost: apache/portal5
+    X-Frame-Options: SAMEORIGIN
+# ...
+</code></pre>
+<p>Alright, we can now start to parse data from the html document, by using query selectors.</p>
+<p>You know, they might actually be called css selectors, I don’t know. How precise is the frontend terminology anyways, right?</p>
+<p>Oh look, a pack of wild frontenders! Hmm, what are they doing, are they encircling us? They do look kinda angry, don’t they? I guess they just tried to vertically align some div the whole day or something.</p>
+<p>Ok… I guess we should leave now.</p>
+<h2>Seems important</h2>
+<p><img src="/assets/webcrawler-2.png" alt="Visual hierarchy, the topmost information is usually something important" /></p>
+<p>We could start with the first information we see on the page, after all, there must hopefully be a reason that it is at the top of the page.</p>
+<p>The three bullet points with the numbers mean confirmed cases, recovered and new cases. Now the trick is to find the best selectors. There are a few plugins for the different browsers that help finding the right selectors quickly.</p>
+<p>But it is also pretty easy to do by hand. When right-click/inspecting an element on the page (this requires the <strong>developer tools</strong>) one can pretty quickly find a decently close selector.</p>
+<p>If you want to test it out in the browser first, you can write something like this <code>document.querySelectorAll(&quot;.c_chart.one .chart_legend li&quot;)</code> in the browser console. Some browsers even highlight the element on the page when you hover over the array elements of the results.</p>
+<p>Using the selectors in <strong>julia</strong> is pretty neat:</p>
+<pre><code class="language-julia">eachmatch(sel&quot;.c_chart.one .chart_legend li&quot;, html.root)
+# =&gt; 
+3-element Array{HTMLNode,1}:
+ HTMLElement{:li}:&lt;li&gt;
+  &lt;span&gt;...&lt;/span&gt;
+  Bestätigte Fälle 5485
+&lt;/li&gt;
+# ...
+</code></pre>
+<p>Ok, we need to extract the numbers from the text of each html element. Using a simple regex seems like the easiest solution in this case. Check this out, it looks very similar to the previous selector matching:</p>
+<pre><code class="language-julia">match(r&quot;\d+&quot;, &quot;Neuinfektionen 25&quot;)
+# =&gt;
+RegexMatch(&quot;25&quot;)
+</code></pre>
+<p>Nice, huh? Ok, but we only need the actual match.</p>
+<pre><code class="language-julia">match(r&quot;\d+&quot;, &quot;Neuinfektionen 25&quot;).match
+# =&gt;
+&quot;25&quot;
+</code></pre>
+<p>And we need to cast it to a number:</p>
+<pre><code class="language-julia">parse(Int, match(r&quot;\d+&quot;, &quot;Neuinfektionen 25&quot;).match)
+# =&gt;
+25
+</code></pre>
+<p>We want to do this for each element now, so we extract the text from the second node (the <code>span</code> element is the first, see the elements above).</p>
+<p>Then we do all the previously done matching and casting and we got our numbers!</p>
+<pre><code class="language-julia">function parsenumbers(el)
+    text = el[2].text
+    parse(Int, match(r&quot;\d+&quot;, text).match)
+end
+map(parsenumbers,
+    eachmatch(sel&quot;.c_chart.one .chart_legend li&quot;, html.root))
+# =&gt;
+3-element Array{Int64,1}:
+ 5485
+ 5000
+   25
+</code></pre>
+<h2>Learning how to Date in german</h2>
+<p>We should also extract the date when those numbers were published. The selector for the date on the page is very easy this time: <code>.chart_publication</code>.</p>
+<p>In the end we want some numbers, that we can use to instantiate a Date object, something like this <code>Date(year, month, day)</code>.
+We are starting out with this, however:</p>
+<pre><code class="language-julia">date = matchFirst(sel&quot;.chart_publication&quot;, html.root)[1].text
+# =&gt;
+&quot;Stand: Mittwoch, 5. August 2020&quot;
+</code></pre>
+<p>Oh dear, it’s in german again. We need <code>&quot;5. August 2020&quot;</code> from this string.</p>
+<pre><code class="language-julia">parts = match(r&quot;(\d+)\.\s*(\S+)\s*(\d{4})&quot;, date).captures
+# =&gt;
+3-element Array{Union{Nothing, SubString{String}},1}:
+ &quot;5&quot;
+ &quot;August&quot;
+ &quot;2020&quot;
+</code></pre>
+<p>Better, but it’s still in german!</p>
+<p>Ok, last bit of german lesson, promised, how about we collect all the month names in a tuple?
+Then we can find its index in the tuple. That would be the perfect input for our <code>Date</code> constructor.</p>
+<pre><code class="language-julia">const MONTHS = (&quot;januar&quot;, &quot;februar&quot;, &quot;märz&quot;, &quot;april&quot;,
+  &quot;mai&quot;, &quot;juni&quot;, &quot;juli&quot;, &quot;august&quot;,
+  &quot;september&quot;, &quot;oktober&quot;, &quot;november&quot;, &quot;dezember&quot;)
+findfirst(m -&gt; m == lowercase(parts[2]), MONTHS) # =&gt; 8
+using Dates
+Date(parse(Int, parts[3]),
+    findfirst(m -&gt; m == lowercase(parts[2]), MONTHS),
+    parse(Int, parts[1]))
+# =&gt; 2020-08-05
+</code></pre>
+<h2>More local = more relevant!</h2>
+<p>There are a few more interesting nuggets of information, I think the hospitalization metrics would be very interesting, especially to investigate the correlation between when cases are confirmed and the delayed hospitalizations.</p>
+<p>But one thing that is especially interesting (and I don’t think such locally detailed information is available anywhere else) are the number of cases in the last 14 days, for each borough.</p>
+<p>Speaking of local, this is probably the most local we can get.</p>
+<p><img src="/assets/webrawler-3.png" alt="List of boroughs, number of new infections aggregated for the last 14 days" /></p>
+<p>By now, you probably start to see a pattern:</p>
+<ol>
+<li><strong>find</strong> good selector</li>
+<li><strong>extract</strong> content</li>
+<li>parse/<strong>collect</strong> details</li>
+</ol>
+<pre><code class="language-julia">rows = eachmatch(sel&quot;.table-article tr&quot;, html.root)[17:end]
+df = Dict()
+foreach(rows) do row
+    name = matchFirst(sel&quot;td:first-child&quot;, row)[1].text
+    num = parse(Int, matchFirst(sel&quot;td:last-child&quot;, row)[1].text)
+    df[name] = num
+end
+df
+# =&gt;
+Dict{Any,Any} with 7 entries:
+  &quot;Bergedorf&quot;     =&gt; 17
+  &quot;Harburg&quot;       =&gt; 28
+  &quot;Hamburg Nord&quot;  =&gt; 26
+  &quot;Wandsbek&quot;      =&gt; 63
+  &quot;Altona&quot;        =&gt; 14
+  &quot;Eimsbüttel&quot;    =&gt; 12
+  &quot;Hamburg Mitte&quot; =&gt; 41
+</code></pre>
+<h2>Great, that’s it?</h2>
+<p>No! No, now the real fun begins. Do something with the data! You will probably already have some idea what you want to do with the data.</p>
+<p>How about ending this with something visual?</p>
+<p>Visualizations, even a simple plot, can help a lot with getting a feel for the structure of the data:</p>
+<pre><code class="language-julia">using Gadfly
+Gadfly.set_default_plot_size(700px, 300px)
+</code></pre>
+<p>There are a lot of great plotting packages for julia, I personally really like <a href="http://gadflyjl.org/stable/">Gadfly.jl</a> for its beautiful plots.</p>
+<pre><code class="language-julia">plot(x=collect(keys(df)), 
+    y=collect(values(df)), 
+    Geom.bar,
+    Guide.xlabel(&quot;Boroughs&quot;),
+    Guide.ylabel(&quot;New Infections&quot;),
+    Guide.title(&quot;New infections in the last 14 days&quot;),
+    Theme(bar_spacing=5mm))
+</code></pre>
+<p><img src="/assets/webcrawler-4.png" alt="Even such a simple plot already helps understanding the data better, right?" /></p>
+<h2>The end, right?</h2>
+<p>Ha ha ha ha- nope. Webcrawlers are notoriously brittle, simply because the crawled websites tend to change over time. And with it, the selectors. It’s a good idea to test if everything works, once in a while, depending on how often you use your webcrawler.</p>
+<p>Be prepared to maintain your webcrawler more often than other pieces of software.</p>
+<h2>A few things to check out</h2>
+<p>Very close to the topic: I created a little package, <a href="https://github.com/oem/Hamburg.jl">Hamburg.jl</a>, that has a few datasets about Hamburg, including all the covid-19 related numbers that we scraped a little earlier.</p>
+<p>The official julia <a href="https://julialang.org/">docs</a> should get you up and running with your local julia dev setup.</p>
+<h2>One last crawler</h2>
+<p>Ok, one more thing, before I let you off to mine the web for all its information:</p>
+<pre><code class="language-julia">html = parsehtml(String(HTTP.get(&quot;https://en.wikipedia.org/wiki/Emerald_cockroach_wasp&quot;)))
+ptags = eachmatch(sel&quot;.mw-parser-output p&quot;, html.root)[8:9]
+join(map(n -&gt; nodeText(n), ptags))
+# =&gt;
+&quot;Once the host is incapacitated, the wasp proceeds to chew off half of each of
+the roach's antennae, after which it carefully feeds from exuding
+hemolymph.[2][3] The wasp, which is too small to carry the roach, then leads
+the victim to the wasp's burrow, by pulling one of the roach's antennae in a
+manner similar to a leash. In the burrow, the wasp will lay one or two white
+eggs, about 2 mm long, between the roach's legs[3]. It then exits and proceeds
+to fill in the burrow entrance with any surrounding debris, more to keep other
+predators and competitors out than to keep the roach in.\nWith its escape
+reflex disabled, the stung roach simply rests in the burrow as the wasp's egg
+hatches after about 3 days. The hatched larva lives and feeds for 4–5 days on
+the roach, then chews its way into its abdomen and proceeds to live as an
+endoparasitoid[4]. Over a period of 8 days, the final-instar larva will consume
+the roach's internal organs, finally killing its host, and enters the pupal
+stage inside a cocoon in the roach's body.[4] Eventually, the fully grown wasp
+emerges from the roach's body to begin its adult life. Development is faster in
+the warm season.\n&quot;
+</code></pre>
+<blockquote>
+<p>…the wasp proceeds to chew off half of each of the roach’s antennae, after which it carefully feeds from exuding…</p>
+</blockquote>
+<p><strong>…what…</strong></p>
+<blockquote>
+<p>…The hatched larva lives and feeds for 4–5 days on the roach, then chews its way into its abdomen…</p>
+</blockquote>
+<p><strong>…the…</strong></p>
+<blockquote>
+<p>…Over a period of 8 days, the final-instar larva will consume the roach’s internal organs, finally killing its host…</p>
+</blockquote>
+<p><strong>…hell mother nature, what the hell…</strong></p>
+
+            </ol>
+            </div>
+            </body>
+</html>
