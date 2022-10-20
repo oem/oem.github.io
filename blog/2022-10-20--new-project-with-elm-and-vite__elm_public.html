@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/main.css">
+  <title>öm's homepage</title>
+</head>
+
+<body>
+            <div class="container">
+            
+            <nav>
+                <ol>
+                    <li class="selected"><a href="/">Blog</a></li>
+                    <li><a href="/lab.html">Lab</a></li>
+                </ol>
+            </nav>
+
+            <ol class="detail-page">
+            <h1>New Project with Elm and Vite</h1>
+<h2>TL;DR</h2>
+<ol>
+<li>A quick rundown on how to setup a new project that will use <strong>Elm</strong> and <strong>Vite</strong>.</li>
+<li>Implementing a skeleton Elm app to ensure that everything works.</li>
+</ol>
+<h2>Project Setup</h2>
+<h3>Initialize the project</h3>
+<p>This command will initialize a vite project.</p>
+<pre><code>npm init vite
+</code></pre>
+<p>Select <em>vanilla</em> (and <em>vanilla</em> variant) since Elm is not one of the supported frameworks.</p>
+<h3>Configure vite and elm</h3>
+<pre><code>cd &lt;your new project&gt;
+npm i --save-dev vite-plugin-elm
+</code></pre>
+<p>Create a new file called <code>vite.config.js</code>:</p>
+<pre><code class="language-javascript">import elmPlugin from &quot;vite-plugin-elm&quot;
+
+export default {
+    // identify what plugins we want to use
+plugins: [elmPlugin()],
+         // configure our build
+         build: {
+             // file path for the build output directory
+outDir: &quot;build&quot;,
+        // esbuild target
+        target: &quot;es2020&quot;
+         }
+}
+</code></pre>
+<h3>Setup the Elm application</h3>
+<pre><code class="language-bash">npm i --save-dev elm-tooling
+npx elm-tooling init
+npx elm-tooling install
+</code></pre>
+<p>This creates a new file, <code>elm-tooling.json</code> and installs the selected tools to <code>~/.elm/elm-tooling</code> (and symlinking them in <code>./node_modules/.bin</code>).</p>
+<p>You can check what tools are installed with:</p>
+<pre><code class="language-bash">npx elm-tooling tools
+</code></pre>
+<p>To track elm dependencies and manage its project settings you can create a new file <code>elm.json</code> with:</p>
+<pre><code class="language-bash">npx elm-json new
+</code></pre>
+<h3>Change around the file structure</h3>
+<p>In the end we want the following folder structure:</p>
+<pre><code>src/Main.elm
+js/index.js
+public/assets/{images,stylesheets}/
+</code></pre>
+<p>We need to connect <code>index.html</code> with <code>index.js</code>:</p>
+<pre><code class="language-html">&lt;script type=&quot;module&quot; src=&quot;./js/index.js&quot;&gt;&lt;/script&gt;
+</code></pre>
+<p>And <code>index.js</code> need to load the Elm App:</p>
+<pre><code class="language-javascript">import { Elm } from &quot;/src/Main.elm&quot;
+const app = Elm.Main.init({});
+</code></pre>
+<p><code>main.js</code> and <code>styles.css</code> can be deleted.</p>
+<h3>Adding Elm dependencies</h3>
+<p>Here is an example on how to add Elm packages:</p>
+<pre><code class="language-bash">npx elm-json install elm/browser elm/url mdgriffith/elm-ui
+</code></pre>
+<h2>Project Setup Simplified</h2>
+<p>One can also just use a repo template instead of all the steps above:</p>
+<pre><code class="language-bash">npx degit lindsaykwardell/vite-elm-template my-elm-app
+npm install
+npm run dev
+</code></pre>
+<p>But it doesn’t hurt to know the steps to get to the same result, the template might get out of sync or parts of the toolchain might change.</p>
+<h2>Skeleton Elm App</h2>
+<h3>Basic Structure</h3>
+<p>In src/Main.elm</p>
+<pre><code class="language-elm">-- MAIN
+-- MODEL
+-- UPDATE
+-- SUBSCRIPTIONS
+-- VIEW
+</code></pre>
+<p>If you have a helpful LSP running, then the imports can be automatically handled for you.</p>
+<h4>main</h4>
+<p>Our <code>main</code> is relatively straightforward:</p>
+<pre><code class="language-elm">-- MAIN
+main : Program () Model Msg
+main =
+    Browser.element { init = init, update = update, subscriptions = subscriptions, view = view }
+</code></pre>
+<p>We still need to implement all those functions.</p>
+<h4>Model and Msg</h4>
+<p>But first, a quick draft of our Model and Msg:</p>
+<pre><code class="language-elm">type Model
+    = Loading
+    | Failure
+    | Success String
+
+type Msg
+    = GotText (Result Http.Error String)
+</code></pre>
+<h4>init and update</h4>
+<p>And how data is being initialized and changed:</p>
+<pre><code class="language-elm">init : () -&gt; ( Model, Cmd Msg )
+init _ =
+    ( Loading
+    , Http.get
+        { url = &quot;&lt;...&gt;&quot;
+        , expect = Http.expectString GotText
+        }
+    )
+
+
+update : Msg -&gt; Model -&gt; ( Model, Cmd Msg )
+update msg _ =
+    case msg of
+        GotText result -&gt;
+            case result of
+                Ok fullText -&gt;
+                    ( Success fullText, Cmd.none )
+
+                Err _ -&gt;
+                    ( Failure, Cmd.none )
+</code></pre>
+<h4>Subscriptions</h4>
+<p>Only two to go, the subscriptions are very simple:</p>
+<pre><code class="language-elm">subscriptions : Model -&gt; Sub Msg
+subscriptions _ =
+    Sub.none
+</code></pre>
+<h4>view</h4>
+<p>And a simple view to show the request states and finally the response :</p>
+<pre><code class="language-elm">view : Model -&gt; Html Msg
+view model =
+    case model of
+        Loading -&gt;
+            text &quot;Loading...&quot;
+
+        Failure -&gt;
+            text &quot;Failed to load.&quot;
+
+        Success fullText -&gt;
+            pre [] [ text fullText ]
+</code></pre>
+<h4>imports</h4>
+<p>And if you didn’t get any nice auto-imports, you will need to put this at the top of the file:</p>
+<pre><code class="language-elm">module Main exposing (Model(..), Msg(..), init, main, subscriptions, update, view)
+
+import Browser
+import Html exposing (Html, pre, text)
+import Http
+</code></pre>
+<p>You ofc don’t need to expose all of those functions.</p>
+
+            </ol>
+            </div>
+            </body>
+</html>

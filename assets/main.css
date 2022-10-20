@@ -50,7 +50,7 @@ img {
 
  --primary-color: #eee;
  --secondary-color: #bbb;
- --highlight-color: #383cd0;
+ --highlight-color: salmon;
 ;
 
  --secondary-background-color: #313139;
@@ -98,6 +98,8 @@ pre {
 
 code {
     font-size: 1.2em;
+    color: salmon;
+    font-weight: bold;
 }
 
 blockquote {
