@@ -50,7 +50,7 @@ img {
 
  --primary-color: #eee;
  --secondary-color: #bbb;
- --highlight-color: salmon;
+ --highlight-color: #ff0068;
 ;
 
  --secondary-background-color: #313139;
@@ -98,7 +98,7 @@ pre {
 
 code {
     font-size: 1.2em;
-    color: salmon;
+    color: #fff;
     font-weight: bold;
 }
 
