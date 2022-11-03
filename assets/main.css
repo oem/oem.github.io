@@ -229,3 +229,22 @@ img {
     color: var(--highlight-color);
     font-weight: var(--weight-heavy);
 }
+
+.social-list {
+    margin: 1em 0;
+}
+
+.social-list li {
+    display: inline-block;
+    margin-right: .6em;
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+
+.social-list li a {
+    color: var(--primary-color);
+}
+
+.social-list li a:hover {
+    color: var(--highlight-color);
+}
