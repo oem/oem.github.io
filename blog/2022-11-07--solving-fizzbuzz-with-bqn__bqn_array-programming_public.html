@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/main.css">
+  <title>öm's homepage</title>
+</head>
+
+<body>
+            <div class="container">
+            
+            <nav>
+                <ol>
+                    <li class="selected"><a href="/">Blog</a></li>
+                    <li><a href="/lab.html">Lab</a></li>
+                </ol>
+            </nav>
+
+            <ol class="detail-page">
+            <h1>Solving FizzBuzz with BQN</h1>
+<pre><code>(∾´∾⟜&quot;Fizz&quot;‿&quot;Buzz&quot;/˜((¬∨´)⊸∾0=3‿5|⊢))¨1+↕
+</code></pre>
+<p>Yes, this is what we are going to recreate, step by step - wait, wait don’t run away quite yet, I hope I can show you that this is much more than just a silly little code-golf exercise (not that there is anything wrong with that)!</p>
+<p>This is going to be a wee bit longer, since we are going to try to learn the basics of <strong>BQN</strong> by implementing a well-known problem, FizzBuzz. And <strong>BQN</strong> is different, very different (well, if you are not familiar with array programming that is), which makes it such an exciting topic to learn!</p>
+<h2>What’s BQN?</h2>
+<p><strong>BQN</strong> is an array programming language, where array programming is a paradigm, like functional programming or OOP is a paradigm.</p>
+<p>It also describes itself as <em>an APL for your flying saucer</em> - soo, what is APL then? It is pretty much the OG array programming language, invented by Ken Iverson in the 60s and <strong>BQN</strong> places itself firmly in the tradition and family of Iversionian languages (like APL, J and K).</p>
+<p>They all have certain attributes in common, like a very terse syntax, usually with mysterious symbols and the execution direction is from right to left, showing their close relation to math.</p>
+<p>Alright, this is probably still a bit dry, I think a few exercises might illustrate those properties better, and why they can be so intellectually stimulating.</p>
+<h2>How can I try it out?</h2>
+<p>You probably want to hack along, an excellent and super easy way to do that is by using <a href="https://bqnpad.mechanize.systems/">BQNPAD</a> - nothing to setup, just visit the website and write away.</p>
+<h2>Warmup</h2>
+<h3>Sum/Reduce</h3>
+<p>To start things off, how about we sum up all numbers in an array?</p>
+<p>In most languages you would have something like a <code>for</code> loop to do the job, if it is a functional language or has functional elements, you might have something like a <code>fold</code> function instead. <strong>BQN</strong> is closer to functional languages (in a lot of regards) and also provides a <code>fold</code> primitive.</p>
+<p>But first, what would an array in <strong>BQN</strong> look like?</p>
+<p>In a lot of languages it would be something like this: <code>[1, 2, 3]</code>.</p>
+<p>In <strong>BQN</strong> it looks like this: <code>1‿2‿3</code>.</p>
+<p>We will not go into the thought process behind this and why it differs from the arguably cleaner looking syntax in APL, but there is a detailed write-up about it in the <a href="https://mlochbaum.github.io/BQN/doc/arrayrepr.html#strands">BQN docs</a> - in fact the whole <strong>BQN</strong> project is extremely well-documented, not only with dry syntax explanation but often also with behind-the-scenes insights. Well worth a read!</p>
+<p>Now, sum/reduce is implemented with the <code>sum</code> function and modifying it with <code>fold</code>. In <strong>BQN</strong> it looks like this:</p>
+<p><code>+´</code></p>
+<p>And the whole program doing the sum/reduce on the array could look something like this:</p>
+<pre><code>+´ 1‿2‿3
+</code></pre>
+<p>I think this is very elegant and clear!</p>
+<p>You might not think so quite yet, I know this is an aquired taste, so let me explain my joy when seeing this:</p>
+<p>While most array programming languages have a relatively small amount of primitives, those can often be combined to form more complex constructs without having to introduce new specialized constructs. This is sometimes refered to as <em>orthogonal design</em> in languages. This creates a sense of discoverability, that can lead to thought processes like this: <em>“So, can I combine this? I have seen something similar before just with another function- oh wow that works, amazing! And now I add this thing here and- what?! That works too?”</em>.</p>
+<p>Here is a multiply/reduce for example:</p>
+<pre><code>×´ 1‿2‿3
+</code></pre>
+<p>This puzzle/discover game is one of the things that makes array programming so addictive - I hope I can manage to nudge you enough in the right direction so that you can also enjoy this part!</p>
+<h2>The solution, step by step</h2>
+<h3>Spoiler: The End Result</h3>
+<pre><code>(∾´∾⟜&quot;Fizz&quot;‿&quot;Buzz&quot;/˜((¬∨´)⊸∾0=3‿5|⊢))¨1+↕100
+</code></pre>
+<p>This is from <a href="https://rosettacode.org/wiki/FizzBuzz#BQN">rosettacode.org</a> - I chose this one instead of my own solution, since it has a better mix of language primitives to demonstrate a few of the cool things of BQN and array programming languages in general.</p>
+<p>Because, yes, we are not really doing this to save the planet with the power of FizzBuzz, but to give our poor, sore, tik-tok overloaded brains a nice deep massage!</p>
+<h3>Range</h3>
+<p><code>↕</code></p>
+<p>This beauty is the range function and will create an array with <em>n</em> elements, where n is the number you provide- this sounds way more complicated than it is, here, have a few examples instead:</p>
+<pre><code>  ↕3
+⟨0 1 2⟩
+  ↕5
+⟨0 1 2 3 4⟩
+</code></pre>
+<p>Wait, you are coding along, right? It’s fun, do it, enter a few of those yourself! In BQNPAD you would get this symbol by typing <code>\d</code>.</p>
+<h4>Double-Meaning</h4>
+<p>I have to admit, I kinda lied to you. When I said <code>↕</code> is the range function… well that is not necessarily true. It can be the range function but only when it is used as a monadic function. Huh, did everyone just leave? Oh no there is one person left- oh, you are an haskell programmer? Ah right.</p>
+<p>Monadic in array programming languages is nothing complicated, it just means that the function takes <em>one</em> argument. <code>↕42</code> - 42 is the single argument of the range function. But it can have a different meaning when the function takes two arguments, this is called dyadic:</p>
+<pre><code>  3↕0‿1‿2‿3
+0 1 2
+1 2 3
+</code></pre>
+<p>This is now the window function, it creates overlapping slices, of length <strong>3</strong> in this example.</p>
+<p>So, to summarize: <code>↕</code> has two meanings, monadically it is the <em>range</em> function, dyadically it is the <em>window</em> function.</p>
+<p>If you have a keen eye, you might’ve spotted another difference to most other programming languages: The functions are infix, meaning, you have one argument on the right and another (optional) argument on the left of the function symbol.</p>
+<p>In our FizzBuzz program the <code>↕</code> function is monadic, on the right is another function which does not act as a second argument to <code>↕</code>. We will later get to functions that can take modifiers as arguments, which kinda look like functions themselves, but later, this is already a lot of new stuff.</p>
+<p>You could write the window example above also like this:</p>
+<pre><code>3↕↕4
+</code></pre>
+<p>The reason I am showing this is to drive home aother important, and unusual concept, the execution direction from right to left.</p>
+<p>Let’s read this together: We have the number <strong>4</strong>, which acts as the argument to the range function to its left. It is the range function because to <em>its</em> left is another <code>↕</code>, which is not a valid second argument to <code>↕</code>. If it were a number or array then the function would be the <em>window</em> function. Anyways, next, we have another <code>↕</code>, it takes as its first argument the result of <code>↕4</code>. And it has a <strong>3</strong> to its left, which acts as its second argument. That makes it the window function. Or written in pseudo code:</p>
+<pre><code>window(range(4), 3)
+</code></pre>
+<p>So, aside from showing the range and window functions, we talked about a few important concepts that are common in a lot of array programming languages:</p>
+<ul>
+<li>The number of arguments (monadic/dyadic) changes the meaning of a primitive</li>
+<li>the execution direction is from right to left</li>
+<li>a function takes as its first argument whatever is on the right, if that is a function then the result of that function is th argument</li>
+</ul>
+<h3>Add</h3>
+<p><code>+</code></p>
+<p>Alright, so we have an array of numbers, but there is one little problem, it starts with 0. For FizzBuzz we want to have the numbers start with 1 instead.</p>
+<p>So, we add one to each number in the array that we previously produced with the range function:</p>
+<pre><code>1+↕100
+</code></pre>
+<p>This is an attribute that a lot of array languages share, called <strong>Rank Polymorphism</strong> - which, simplified, means that the primitives work on different rank arrays. Rank I say? For now, think of it as dimensions, again, simplified, so you can use the <code>+</code> primitive on vectors together with matrices, or any other combination, even scalars like in our case.</p>
+<h4>Examples in other languages</h4>
+<p>There are examples of similar functionality implemented in other languages:</p>
+<p><strong>Broadcasting in julia</strong></p>
+<pre><code class="language-julia">1 .+ collect(range(1, 10))
+</code></pre>
+<p><strong>Broadcasting in Numpy</strong></p>
+<pre><code class="language-python">import numpy as np
+np.array([1]) + np.arange(0, 10)
+</code></pre>
+<h3>Each</h3>
+<p><code>¨</code></p>
+<p>Written <code>/2</code>.</p>
+<p>Each is somewhat of a new thing for us: It is not a simple function but a modifier. It will modify the function to its left, deriving a new function that will get each element to the right.</p>
+<h4>Together with Length</h4>
+<p><code>≠</code></p>
+<p>Written <code>\/</code>.</p>
+<p>It is probably easier to demonstrate <code>each</code> by showing it with another primitive: <code>length</code>.</p>
+<p>It returns the length of a list: </p>
+<pre><code>  ≠ 12‿13‿14
+3
+</code></pre>
+<p>But what if we want to get the length of each list in a list of lists (nested list)?</p>
+<p>Just using length by itself again will only return the length of the enclosing list:</p>
+<pre><code>  ≠ ⟨⟨12,13,14⟩,⟨1,2,3,4⟩⟩
+2
+</code></pre>
+<p>Each will help us here, it will yield <code>each</code> sublist and apply the function it modified on it:</p>
+<pre><code>  ≠¨ ⟨⟨12,13,14⟩,⟨1,2,3,4⟩⟩
+⟨3 4⟩
+</code></pre>
+<h4>Everything to the Left</h4>
+<p>Ok, back to our FizzBuzz program: each will yield every element of the list of numbers from 1 to 100 to the function to its left, which in our case is everything in the paranthesis:</p>
+<pre><code>  (everything here will act as the function for each)¨1+↕100
+</code></pre>
+<p>Now, let’s dig into that part!</p>
+<h3>Identity (Right)</h3>
+<p><code>⊢</code></p>
+<p>Written <code>\}</code>.</p>
+<p>This one might seem a bit useless at first, but the identity functions will become especially useful when you write tacit code. But let’s not overload ourselves, here it just means: “Replace with right argument”.</p>
+<p>In our program it means that the right identity will be replaced with each of the numbers from 1 to 100. It will iterate over that range and yield the value to the rest of the function:</p>
+<pre><code>(...⊢)¨↕100
+</code></pre>
+<h3>Modulus</h3>
+<p><code>|</code></p>
+<p>The range of 1 to 100 will be used as the argument of the next function, which is <code>modulus</code>, so, it will return the remainder of the division of the right argument by the left argument. It is a dyadic function, its left argument is <code>3‿5</code>.</p>
+<p>When it is not a single number then it will check the remainders for all elements of the array:</p>
+<pre><code>  3‿5|12
+⟨0 2⟩
+</code></pre>
+<p>This is definitely part of the “to think in arrays” skillset that one will learn after doing array programming for a while.</p>
+<pre><code>  (...3‿5|⊢)¨1+↕5
+⟨ ⟨ 1 1 ⟩ ⟨ 2 2 ⟩ ⟨ 0 3 ⟩ ⟨ 1 4 ⟩ ⟨ 2 0 ⟩ ⟩
+</code></pre>
+<p>Divide each right argument by 3 and by 5, resulting in a list of lists (the result for each 3‿5 division).</p>
+<p>The first <code>⟨1 1⟩</code> is the result of <code>3‿5|1</code>, <code>⟨2 2⟩</code> the result of <code>3‿5|2</code>, <code>⟨0 3⟩</code> the result of <code>3‿5|3</code> etc.</p>
+<h3>Equal</h3>
+<p><code>=</code></p>
+<p><code>equal</code> is pretty straight forward, it will check its right argument for any occurences of the left argument:</p>
+<pre><code>  0=3‿5|3
+⟨1 0⟩
+</code></pre>
+<h3>Join</h3>
+<p><code>∾</code></p>
+<p>Written <code>\,</code></p>
+<p><code>join</code> joins two lists together.</p>
+<p>For example:</p>
+<pre><code>  12‿13‿14∾1‿2‿3
+⟨12 13 14 1 2 3⟩
+  &quot;abc&quot;∾&quot;def&quot;
+&quot;abcdef&quot;
+</code></pre>
+<p>It will join together our list of lists (with their two elements signifying if the number was dividible by 3 or 5) with something else.</p>
+<p>What exactly we join together will become clear once we have worked through the next part:</p>
+<pre><code>(¬∨´)⊸∾
+</code></pre>
+<h3>Before</h3>
+<p><code>⊸</code></p>
+<p>Written <code>\h</code></p>
+<p><code>before</code> is quite the interesting little primitive: It is a combinator. Combinators can be used to add/change excution structure. BQN has quite a few of those, which is really cool! But it will probably take a little bit until their usage becomes second nature (and can be properly appreciated).</p>
+<p>Anyways, given you have two functions, <code>𝔽</code> and <code>𝔾</code> and one argument <code>𝕩</code>:</p>
+<pre><code>𝔽⊸𝔾 𝕩
+</code></pre>
+<p>The <code>before</code> combinator shuffles around a few things:</p>
+<pre><code>(𝔽 𝕩) 𝔾 𝕩
+</code></pre>
+<p>Here is a visual helper: The pointy part of before points to the first function to be executed, while the round part points to the finalizing function that returns the result of this expression.</p>
+<p>Getting back to our FizzBuzz problem:</p>
+<p>The <code>𝔾</code> in our case is the join <code>∾</code> function, while <code>𝔽</code> is <code>(¬∨´)</code>.</p>
+<p>If we take a simple value for <code>𝕩</code>, say 12, we will have the following scenario:</p>
+<pre><code>  0=3‿5|12
+⟨1 0⟩
+</code></pre>
+<p>It might the help to replace the before combinator with the expanded form:</p>
+<pre><code>((¬∨´) 1‿0)∾1‿0
+</code></pre>
+<p>This is the written out form of <code>(𝔽𝕩) 𝔾𝕩</code>, applied to our example.</p>
+<p>Alright, let’s try to make sense of this part then: <code>¬∨´</code>.</p>
+<h3>Fold</h3>
+<p><code>´</code></p>
+<p>Written <code>\5</code></p>
+<p><code>fold</code> is a classic, especially in functional programming. It is a modifier and will need a function to fold over with.</p>
+<p>We saw an example of fold a bit earlier, when we were looking at sum/reduce. Here, we are doing an or/reduce <code>∨´</code>:</p>
+<pre><code>  ∨´ 1‿0
+1
+</code></pre>
+<h3>Or</h3>
+<p><code>∨</code></p>
+<p>Written <code>\v</code></p>
+<p>The <code>or</code> we used with our fold is a logical or, so as long as there is one <code>1</code> it will fold to <code>1</code>:</p>
+<pre><code>  ∨´ 1‿0‿0‿0
+1
+  ∨´ 0‿0
+0
+</code></pre>
+<h3>Not</h3>
+<p><code>¬</code></p>
+<p>Written <code>\~</code></p>
+<p><code>not</code> is is a logical not and will negate our numbers. We currently have the <code>∨´ 1‿0</code> which is <code>1</code> and negated to a <code>0</code>.</p>
+<p>We then join it to the <code>1‿0</code> (the result of <code>0=3‿5|12</code>) which will result in <code>⟨0 1 0⟩</code>.</p>
+<h3>Swap</h3>
+<p><code>˜</code></p>
+<p>Written <code>\</code> `</p>
+<p><code>swap</code> is a modifier to a function (to its left). We have seen a few modifiers already, like before and fold. <code>swap</code> swaps the left and right arguments of its function to the left that it is modifying:</p>
+<pre><code>  &quot;foo&quot;∾˜&quot;moo&quot;
+&quot;moofoo&quot;
+  &quot;foo&quot;∾&quot;moo&quot;
+&quot;foomoo&quot;
+</code></pre>
+<p>Swap is often used to <em>fix</em> which argument is the left and which is the right for a function.</p>
+<h3>Replicate</h3>
+<p><code>/</code></p>
+<p>In our FizzBuzz program we are swapping the arguments for the <code>replicate</code> function.</p>
+<p>So, what is the <code>replicate</code> function you ask? Let’s have a look how it works:</p>
+<pre><code>  1‿0‿0‿1/&quot;abcd&quot;
+&quot;ad&quot;
+</code></pre>
+<p>Here, we see something in action, that is quite common in arrray programming languages: A boolean mask. We have seen something similar already when we compared the results of our Modulus to zero (<code>0=3‿5|⊢</code>) - that generated a boolean mask that we could then use for other operations - this is very common and a different way of thinking about how to write programs.</p>
+<p>We are using <code>Replicate</code> on <code>&quot;Fizz&quot;‿&quot;Buzz&quot;</code> to the left (that’s why we swap the arguments around).</p>
+<p>But maybe you remember that the other argument, the one that will serve as the boolean mask for replicate, is a list with 3-elements. “Fizz”‿“Buzz” is a list with only two elements, so how would that work?</p>
+<p><code>0‿0‿1/&quot;Fizz&quot;‿&quot;Buzz&quot;</code></p>
+<p>Turns out, that doesn’t actually work, also, if you are familiar with the FizzBuzz problem, we don’t seem to address the case where a number is divisible by 5 and by 3, which would translate into “FizzBuzz”.</p>
+<p>The rest of the program solves that issue, but to understand it, we will need to learn one more primitive.</p>
+<h3>Bind/After</h3>
+<p><code>⟜</code></p>
+<p>Written <code>/l</code></p>
+<p>Bind/After is similar and related to <code>before</code> which we looked at already. Here, we are using it to modify <code>join</code>:</p>
+<p><code>∾⟜ &quot;Fizz&quot;‿Buzz&quot; 𝕩</code> which expands to <code>𝕩 ∾ &quot;Fizz&quot;‿Buzz&quot;</code> turning our 2-element list into a 3-element list. You might be wondering “what is being prepended to our list here?” and the answer is, the number <code>each</code> passed in originally. Remember that we passed in <code>each</code> number of our range (in our example <code>1+↕100</code>). Let’s play this through with one number, say <code>3</code>:</p>
+<p>The first part will check if it is divisible by 3 or 5:</p>
+<pre><code>0=3‿5|⊢
+</code></pre>
+<p>Which for 3 will result in <code>1‿0</code>.</p>
+<p>The next bit is kind of the core or the <em>clever</em> part of this FizzBuzz solution:</p>
+<pre><code>  (¬∨´)⊸∾1‿0
+⟨ 0 1 0 ⟩
+</code></pre>
+<p>So, what does this actually do? The <code>not or/reduce</code> basically says: “set this to one if all the elements of the list are zero”. And why would we want that? Because for the FizzBuzz problem we will show the original number if it is not divisible by 3 or 5.</p>
+<p>Remember how we prepended the original number to <code>&quot;Fizz&quot;‿&quot;Buzz&quot;</code>? If we expand the <code>replicate/swap</code> we will have this in the end:</p>
+<pre><code>  0‿1‿0 / 3‿&quot;Fizz&quot;‿&quot;Buzz&quot;
+⟨ &quot;Fizz&quot; ⟩
+</code></pre>
+<p>Now, if we have a number that would not be divisible by 3 or 5 we would have this situation:</p>
+<pre><code>  1‿0‿0 / 2‿&quot;Fizz&quot;‿&quot;Buzz&quot;
+⟨ 2 ⟩
+</code></pre>
+<p>And what if we have a number that is divisible by 3 and by 5?</p>
+<pre><code>  0‿1‿1 / 15‿&quot;Fizz&quot;‿&quot;Buzz&quot;
+⟨ &quot;Fizz&quot; &quot;Buzz&quot; ⟩
+</code></pre>
+<p>I hope it starts to slowly make a bit more sense by now.</p>
+<p>The last bit, <code>∾´</code> is actually pretty straightforward, if we leave it out we will in the end have a list of lists, but we want to flatten the result into a simple vector instead:</p>
+<p>Without <code>join/reduce</code>:</p>
+<pre><code>  (∾⟜&quot;Fizz&quot;‿&quot;Buzz&quot;/˜((¬∨´)⊸∾0=3‿5|⊢))¨1+↕15
+⟨ ⟨ 1 ⟩ ⟨ 2 ⟩ ... ⟨ &quot;Fizz&quot; &quot;Buzz&quot; ⟩ ⟩
+</code></pre>
+<p>And with <code>join/reduce</code>:</p>
+<pre><code>  (∾´∾⟜&quot;Fizz&quot;‿&quot;Buzz&quot;/˜((¬∨´)⊸∾0=3‿5|⊢))¨1+↕15
+⟨ 1 2 &quot;Fizz&quot; 4 &quot;Buzz&quot; &quot;Fizz&quot; 7 8 &quot;Fizz&quot; &quot;Buzz&quot; 11 &quot;Fizz&quot; 13 14 &quot;FizzBuzz&quot; ⟩
+</code></pre>
+<h2>Hungry for more?</h2>
+<p>I can’t recommend the BQN docs enough, they are a great read! Here are the links to each of the primitives we have used today:</p>
+<ul>
+<li><a href="https://mlochbaum.github.io/BQN/doc/range.html">Range</a></li>
+<li><a href="https://mlochbaum.github.io/BQN/help/conjugate_add.html">Add</a></li>
+<li><a href="https://mlochbaum.github.io/BQN/doc/map.html">Each</a></li>
+<li><a href="https://mlochbaum.github.io/BQN/doc/identity.html">Identity</a></li>
+<li><a href="https://mlochbaum.github.io/BQN/doc/arithmetic.html#additional-arithmetic">Modulus</a></li>
+<li><a href="https://mlochbaum.github.io/BQN/doc/arithmetic.html#comparisons">Equal</a></li>
+<li><a href="https://mlochbaum.github.io/BQN/doc/join.html">Join</a></li>
+<li><a href="https://mlochbaum.github.io/BQN/help/before_bind.html">Before</a></li>
+<li><a href="https://mlochbaum.github.io/BQN/help/fold.html">Fold</a></li>
+<li><a href="https://mlochbaum.github.io/BQN/help/not_span.html">Not</a></li>
+<li><a href="https://mlochbaum.github.io/BQN/help/self_swap.html">Swap</a></li>
+<li><a href="https://mlochbaum.github.io/BQN/help/indices_replicate.html">Replicate</a></li>
+<li><a href="https://mlochbaum.github.io/BQN/help/after_bind.html">Bind/After</a></li>
+</ul>
+<p>And if you want to know more about Array Programming in general (and a lot of motivation to dig deeper): <a href="https://www.arraycast.com/">The Array Cast</a> is a very fun podcast!</p>
+
+            </ol>
+            </div>
+            </body>
+</html>
