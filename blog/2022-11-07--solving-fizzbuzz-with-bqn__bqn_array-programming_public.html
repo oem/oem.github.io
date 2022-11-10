@@ -46,7 +46,7 @@
 </code></pre>
 <p>I think this is very elegant and clear!</p>
 <p>You might not think so quite yet, I know this is an aquired taste, so let me explain my joy when seeing this:</p>
-<p>While most array programming languages have a relatively small amount of primitives, those can often be combined to form more complex constructs without having to introduce new specialized constructs. This is sometimes refered to as <em>orthogonal design</em> in languages. This creates a sense of discoverability, that can lead to thought processes like this: <em>“So, can I combine this? I have seen something similar before just with another function- oh wow that works, amazing! And now I add this thing here and- what?! That works too?”</em>.</p>
+<p>While most array programming languages have a relatively small amount of primitives, those can often be combined to form more complex constructs without having to introduce new specialized constructs. This is sometimes referred to as <em>orthogonal design</em> in languages. This creates a sense of discoverability, that can lead to thought processes like this: <em>“So, can I combine this? I have seen something similar before just with another function- oh wow that works, amazing! And now I add this thing here and- what?! That works too?”</em>.</p>
 <p>Here is a multiply/reduce for example:</p>
 <pre><code>×´ 1‿2‿3
 </code></pre>
@@ -233,7 +233,7 @@ np.array([1]) + np.arange(0, 10)
 <pre><code>  1‿0‿0‿1/&quot;abcd&quot;
 &quot;ad&quot;
 </code></pre>
-<p>Here, we see something in action, that is quite common in arrray programming languages: A boolean mask. We have seen something similar already when we compared the results of our Modulus to zero (<code>0=3‿5|⊢</code>) - that generated a boolean mask that we could then use for other operations - this is very common and a different way of thinking about how to write programs.</p>
+<p>Here, we see something in action, that is quite common in array programming languages: A boolean mask. We have seen something similar already when we compared the results of our Modulus to zero (<code>0=3‿5|⊢</code>) - that generated a boolean mask that we could then use for other operations - this is very common and a different way of thinking about how to write programs.</p>
 <p>We are using <code>Replicate</code> on <code>&quot;Fizz&quot;‿&quot;Buzz&quot;</code> to the left (that’s why we swap the arguments around).</p>
 <p>But maybe you remember that the other argument, the one that will serve as the boolean mask for replicate, is a list with 3-elements. “Fizz”‿“Buzz” is a list with only two elements, so how would that work?</p>
 <p><code>0‿0‿1/&quot;Fizz&quot;‿&quot;Buzz&quot;</code></p>
