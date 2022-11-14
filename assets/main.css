@@ -225,6 +225,7 @@ img {
 }
 
 .detail-page a,
+a.rss-link,
 .content-list p a {
     color: var(--highlight-color);
     font-weight: var(--weight-heavy);
